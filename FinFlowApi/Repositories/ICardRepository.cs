@@ -5,4 +5,5 @@ namespace FinFlowApi.Repositories;
 public interface ICardRepository
 {
     Task<(string?, string?)> VerifyCardAsync(OtpDtoRequest dto);
+    Task<int> VerifyOtpAsync(VerifyDtoRequest dto);
 }

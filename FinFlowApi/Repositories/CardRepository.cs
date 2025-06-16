@@ -62,5 +62,21 @@ public class CardRepository : ICardRepository
             return (otp, otpId);
         }
     }
+    public async Task<int> VerifyOtpAsync(VerifyDtoRequest dto)
+    {
+        using var connection = new OracleConnection(_connectionString);
+        await connection.OpenAsync();
 
+        var checkQuery = "SELECT COUNT(*) FROM Cards WHERE otpid = :otpid AND otp = :otp";
+        using (var checkCommand = new OracleCommand(checkQuery, connection))
+        {
+            checkCommand.Parameters.Add(new OracleParameter("otpid", dto.Id));
+            checkCommand.Parameters.Add(new OracleParameter("otp", dto.Token));
+
+            var result = await checkCommand.ExecuteScalarAsync();
+            var count = Convert.ToInt32(result);
+
+            return count > 0 ? 0 : -1;
+        }
+    }
 }

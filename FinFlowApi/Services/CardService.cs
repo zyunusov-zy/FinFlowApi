@@ -19,4 +19,13 @@ public class CardService : ICardService
 
         return (otp, otpId);
     }
+
+    public async Task<string?> VerifyOtp(VerifyDtoRequest dto)
+    {
+        var code = await _repo.VerifyOtpAsync(dto);
+        if (code == -1) throw new Exception("Invalid Credentials");
+        // mb needed otp card and expiry number idk
+        var refNum = "string"; // create function to generate refNum;
+        return refNum;
+    }
 }

@@ -100,6 +100,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<OtpDtoRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<VerifyDtoRequestValidator>();
 
 var app = builder.Build();
 
