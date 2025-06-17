@@ -56,7 +56,11 @@ public class OtpController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { error = ex.Message });
+            return BadRequest(new
+            {
+                error = ex.Message,
+                code = -320
+            });
         }
     }
 

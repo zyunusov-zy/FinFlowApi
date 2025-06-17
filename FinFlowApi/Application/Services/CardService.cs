@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 using FinFlowApi.DTOs;
 using FinFlowApi.Repositories;
 
@@ -24,8 +27,25 @@ public class CardService : ICardService
     {
         var code = await _repo.VerifyOtpAsync(dto);
         if (code == -1) throw new Exception("Invalid Credentials");
-        // mb needed otp card and expiry number idk
-        var refNum = "string"; // create function to generate refNum;
+        var refNum = GenerateRefNum();
+        await _repo.SaveRefNumAsync(dto ,refNum);
         return refNum;
+    }
+
+
+    private static string GenerateRefNum(int length = 32)
+    {
+        const string AllowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var result = new StringBuilder(length);
+        var buffer = new byte[sizeof(uint)];
+
+        for (int i = 0; i < length; i++)
+        {
+            RandomNumberGenerator.Fill(buffer);
+            uint num = BitConverter.ToUInt32(buffer, 0);
+            result.Append(AllowedChars[(int)(num % (uint)AllowedChars.Length)]);
+        }
+
+        return result.ToString();
     }
 }

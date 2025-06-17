@@ -79,4 +79,24 @@ public class CardRepository : ICardRepository
             return count > 0 ? 0 : -1;
         }
     }
+
+    public async Task SaveRefNumAsync(VerifyDtoRequest dto, string refNum)
+    {
+        using var connection = new OracleConnection(_connectionString);
+        await connection.OpenAsync();
+
+        var sql = @"UPDATE Cards
+                    SET RefNum = :RefNum
+                    WHERE otpid = :OtpId AND otp = :Otp";
+
+        using var command = new OracleCommand(sql, connection);
+        command.Parameters.Add(new OracleParameter("RefNum", refNum));
+        command.Parameters.Add(new OracleParameter("OtpId", dto.Id));
+        command.Parameters.Add(new OracleParameter("Otp", dto.Token));
+
+        var rowsAffected = await command.ExecuteNonQueryAsync();
+
+        if (rowsAffected == 0)
+            throw new Exception("Failed to update refNum: OTP not found or already used.");
+    }
 }

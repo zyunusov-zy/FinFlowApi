@@ -127,7 +127,7 @@ EOF
     echo "Project structure and files created!"
 
     # Packages
-    dotnet add package Oracle.ManagedDataAccess
+    dotnet add package Oracle.ManagedDataAccess.Core
     dotnet add package DotNetEnv
     dotnet add package FluentValidation
     dotnet add package FluentValidation.AspNetCore
