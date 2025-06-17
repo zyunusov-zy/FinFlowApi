@@ -34,11 +34,14 @@ public class CardRepository : ICardRepository
 
         string otp = OtpService.GenerateOtp();
 
+        var expiresAt = DateTime.UtcNow.AddMinutes(1);
+
         var updateQuery = @"
             UPDATE Cards 
-            SET otp = :otp, otpid = otp_id_seq.NEXTVAL 
+            SET otp = :otp, otpid = otp_id_seq.NEXTVAL, otp_expiry = :expirytime 
             WHERE pan = :pan AND expirydate = :expiry 
             RETURNING otpid INTO :otpId";
+
 
         using (var updateCommand = new OracleCommand(updateQuery, connection))
         {
@@ -46,7 +49,10 @@ public class CardRepository : ICardRepository
             {
                 Value = otp
             });
-
+            updateCommand.Parameters.Add(new OracleParameter("expirytime", OracleDbType.TimeStamp)
+            {
+                Value = expiresAt
+            });
             updateCommand.Parameters.Add(new OracleParameter("pan", dto.Pan));
             updateCommand.Parameters.Add(new OracleParameter("expiry", dto.Expiry));
 
@@ -63,22 +69,35 @@ public class CardRepository : ICardRepository
         }
     }
     public async Task<int> VerifyOtpAsync(VerifyDtoRequest dto)
+{
+    using var connection = new OracleConnection(_connectionString);
+    await connection.OpenAsync();
+
+    var now = DateTime.UtcNow;
+    var checkQuery = @"
+        SELECT COUNT(*)
+        FROM Cards
+        WHERE otpid = :otpid AND otp = :otp AND otp_expiry > :now";
+
+    using (var checkCommand = new OracleCommand(checkQuery, connection))
     {
-        using var connection = new OracleConnection(_connectionString);
-        await connection.OpenAsync();
-
-        var checkQuery = "SELECT COUNT(*) FROM Cards WHERE otpid = :otpid AND otp = :otp";
-        using (var checkCommand = new OracleCommand(checkQuery, connection))
+        checkCommand.Parameters.Add(new OracleParameter("otpid", dto.Id));
+        checkCommand.Parameters.Add(new OracleParameter("otp", dto.Token));
+        checkCommand.Parameters.Add(new OracleParameter("now", OracleDbType.TimeStamp)
         {
-            checkCommand.Parameters.Add(new OracleParameter("otpid", dto.Id));
-            checkCommand.Parameters.Add(new OracleParameter("otp", dto.Token));
+            Value = now
+        });
 
-            var result = await checkCommand.ExecuteScalarAsync();
-            var count = Convert.ToInt32(result);
+        var result = await checkCommand.ExecuteScalarAsync();
 
-            return count > 0 ? 0 : -1;
-        }
+        if (result == null || result == DBNull.Value)
+            return -1;
+
+        var count = Convert.ToInt32(result);
+        return count > 0 ? 0 : -2;
     }
+}
+
 
     public async Task SaveRefNumAsync(VerifyDtoRequest dto, string refNum)
     {

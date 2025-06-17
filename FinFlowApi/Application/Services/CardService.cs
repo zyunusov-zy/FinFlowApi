@@ -27,6 +27,7 @@ public class CardService : ICardService
     {
         var code = await _repo.VerifyOtpAsync(dto);
         if (code == -1) throw new Exception("Invalid Credentials");
+        if (code == -2) throw new Exception("OTP Expiried");
         var refNum = GenerateRefNum();
         await _repo.SaveRefNumAsync(dto ,refNum);
         return refNum;
