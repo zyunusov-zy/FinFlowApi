@@ -14,11 +14,16 @@ public class CardTokenController : ControllerBase
 {
     private readonly ICardTokenService _cardTokenService;
     private readonly IValidator<CardTokenRemoveDto> _cardTokenRemoveValidator;
+    private readonly IValidator<BlockCardTokenDto> _blockCardTokenValidator;
 
-    public CardTokenController(ICardTokenService cardTokenService, IValidator<CardTokenRemoveDto> cardTokenRemoveValidator)
+    public CardTokenController(
+        ICardTokenService cardTokenService,
+        IValidator<CardTokenRemoveDto> cardTokenRemoveValidator,
+        IValidator<BlockCardTokenDto> blockCardTokenValidator)
     {
         _cardTokenRemoveValidator = cardTokenRemoveValidator;
         _cardTokenService = cardTokenService;
+        _blockCardTokenValidator = blockCardTokenValidator;
     }
 
     [HttpPost("remove")]
@@ -40,6 +45,45 @@ public class CardTokenController : ControllerBase
         try
         {
             var status = await _cardTokenService.RemoveCardToken(dto);
+            return Ok(new
+            {
+                result = new
+                {
+                    id = dto.CardToken,
+                    status = status
+                }
+            });
+
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                error = ex.Message,
+                status = 1
+            });
+        }
+    }
+
+    [HttpPost("block")]
+    [Authorize]
+    public async Task<IActionResult> BlockCardToken([FromBody]  BlockCardTokenDto dto)
+    {
+        var validationResult = await _blockCardTokenValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(e => new
+            {
+                e.PropertyName,
+                e.ErrorMessage
+            });
+
+            return BadRequest(errors);
+        }
+
+        try
+        {
+            var status = await _cardTokenService.BlockCardTokenS(dto);
             return Ok(new
             {
                 result = new

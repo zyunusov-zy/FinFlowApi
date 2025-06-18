@@ -69,34 +69,34 @@ public class CardRepository : ICardRepository
         }
     }
     public async Task<int> VerifyOtpAsync(VerifyDtoRequest dto)
-{
-    using var connection = new OracleConnection(_connectionString);
-    await connection.OpenAsync();
-
-    var now = DateTime.UtcNow;
-    var checkQuery = @"
-        SELECT COUNT(*)
-        FROM Cards
-        WHERE otpid = :otpid AND otp = :otp AND otp_expiry > :now";
-
-    using (var checkCommand = new OracleCommand(checkQuery, connection))
     {
-        checkCommand.Parameters.Add(new OracleParameter("otpid", dto.Id));
-        checkCommand.Parameters.Add(new OracleParameter("otp", dto.Token));
-        checkCommand.Parameters.Add(new OracleParameter("now", OracleDbType.TimeStamp)
+        using var connection = new OracleConnection(_connectionString);
+        await connection.OpenAsync();
+
+        var now = DateTime.UtcNow;
+        var checkQuery = @"
+            SELECT COUNT(*)
+            FROM Cards
+            WHERE otpid = :otpid AND otp = :otp AND otp_expiry > :now";
+
+        using (var checkCommand = new OracleCommand(checkQuery, connection))
         {
-            Value = now
-        });
+            checkCommand.Parameters.Add(new OracleParameter("otpid", dto.Id));
+            checkCommand.Parameters.Add(new OracleParameter("otp", dto.Token));
+            checkCommand.Parameters.Add(new OracleParameter("now", OracleDbType.TimeStamp)
+            {
+                Value = now
+            });
 
-        var result = await checkCommand.ExecuteScalarAsync();
+            var result = await checkCommand.ExecuteScalarAsync();
 
-        if (result == null || result == DBNull.Value)
-            return -1;
+            if (result == null || result == DBNull.Value)
+                return -1;
 
-        var count = Convert.ToInt32(result);
-        return count > 0 ? 0 : -2;
+            var count = Convert.ToInt32(result);
+            return count > 0 ? 0 : -2;
+        }
     }
-}
 
 
     public async Task SaveRefNumAsync(VerifyDtoRequest dto, string refNum)

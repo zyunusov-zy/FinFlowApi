@@ -20,4 +20,13 @@ public class CardTokenService : ICardTokenService
             throw new KeyNotFoundException("Card token not found.");
         return 0;
     }
+
+    public async Task<int> BlockCardTokenS(BlockCardTokenDto dto)
+    {
+        var blocked = await _repo.BlockCardTokenAsync(dto);
+        if (blocked == -1)
+            throw new KeyNotFoundException("Card token not found.");
+        return 0;
+    }
+
 }
