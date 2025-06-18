@@ -62,6 +62,7 @@ builder.Services.AddAuthorization();
 // Repo
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICardTokenRepository, CardTokenRepository>();
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -95,7 +96,7 @@ builder.Services.AddSwaggerGen(options =>
 //  Dependency Injection
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IUserService, UserService>();
-
+builder.Services.AddScoped<ICardTokenService, CardTokenService>();
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
