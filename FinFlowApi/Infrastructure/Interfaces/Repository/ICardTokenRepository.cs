@@ -4,7 +4,8 @@ namespace FinFlowApi.Repositories;
 
 public interface ICardTokenRepository
 {
-    Task<int> RemoveCardTokenAsync(CardTokenRemoveDto dto);
+    Task<int> RemoveCardTokenAsync(CardTokenRemoveAndUnblockDto dto);
 
     Task<int> BlockCardTokenAsync(BlockCardTokenDto dto);
+    Task<int> UnblockCardTokenAsync(CardTokenRemoveAndUnblockDto dto);
 }

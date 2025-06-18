@@ -13,12 +13,12 @@ namespace FinFlowApi.Controllers;
 public class CardTokenController : ControllerBase
 {
     private readonly ICardTokenService _cardTokenService;
-    private readonly IValidator<CardTokenRemoveDto> _cardTokenRemoveValidator;
+    private readonly IValidator<CardTokenRemoveAndUnblockDto> _cardTokenRemoveValidator;
     private readonly IValidator<BlockCardTokenDto> _blockCardTokenValidator;
 
     public CardTokenController(
         ICardTokenService cardTokenService,
-        IValidator<CardTokenRemoveDto> cardTokenRemoveValidator,
+        IValidator<CardTokenRemoveAndUnblockDto> cardTokenRemoveValidator,
         IValidator<BlockCardTokenDto> blockCardTokenValidator)
     {
         _cardTokenRemoveValidator = cardTokenRemoveValidator;
@@ -28,7 +28,7 @@ public class CardTokenController : ControllerBase
 
     [HttpPost("remove")]
     [Authorize]
-    public async Task<IActionResult> RemoveCardToken([FromBody] CardTokenRemoveDto dto)
+    public async Task<IActionResult> RemoveCardToken([FromBody] CardTokenRemoveAndUnblockDto dto)
     {
         var validationResult = await _cardTokenRemoveValidator.ValidateAsync(dto);
         if (!validationResult.IsValid)
@@ -67,7 +67,7 @@ public class CardTokenController : ControllerBase
 
     [HttpPost("block")]
     [Authorize]
-    public async Task<IActionResult> BlockCardToken([FromBody]  BlockCardTokenDto dto)
+    public async Task<IActionResult> BlockCardToken([FromBody] BlockCardTokenDto dto)
     {
         var validationResult = await _blockCardTokenValidator.ValidateAsync(dto);
         if (!validationResult.IsValid)
@@ -89,7 +89,47 @@ public class CardTokenController : ControllerBase
                 result = new
                 {
                     id = dto.CardToken,
-                    status = status
+                    status = status,
+                    message = "Token successfully blocked!"
+                }
+            });
+
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                error = ex.Message,
+                status = 1
+            });
+        }
+    }
+    [HttpPost("unblock")]
+    [Authorize]
+    public async Task<IActionResult> UnblockCardToken([FromBody]  CardTokenRemoveAndUnblockDto dto)
+    {
+        var validationResult = await _cardTokenRemoveValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(e => new
+            {
+                e.PropertyName,
+                e.ErrorMessage
+            });
+
+            return BadRequest(errors);
+        }
+
+        try
+        {
+            var status = await _cardTokenService.UnblockCardTokenS(dto);
+            return Ok(new
+            {
+                result = new
+                {
+                    id = dto.CardToken,
+                    status = status,
+                    message = "Token successfully unblocked!"
                 }
             });
 

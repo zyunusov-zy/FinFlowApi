@@ -14,7 +14,7 @@ public class CardTokenRepository : ICardTokenRepository
         _connectionString = connection;
     }
 
-    public async Task<int> RemoveCardTokenAsync(CardTokenRemoveDto dto)
+    public async Task<int> RemoveCardTokenAsync(CardTokenRemoveAndUnblockDto dto)
     {
 
         using var connection = new OracleConnection(_connectionString);
@@ -43,6 +43,22 @@ public class CardTokenRepository : ICardTokenRepository
             {
                 Value = expiresAt
             });
+            updateCommand.Parameters.Add(new OracleParameter("Token", dto.CardToken));
+
+            var affected = await updateCommand.ExecuteNonQueryAsync();
+            return affected > 0 ? 0 : -1;
+        }
+    }
+
+    public async Task<int> UnblockCardTokenAsync(CardTokenRemoveAndUnblockDto dto)
+    {
+        using var connection = new OracleConnection(_connectionString);
+        await connection.OpenAsync();
+
+
+        var updateQuery = @"UPDATE Cards SET BlockTime = NULL WHERE RefNum = :Token";
+        using (var updateCommand = new OracleCommand(updateQuery, connection))
+        {
             updateCommand.Parameters.Add(new OracleParameter("Token", dto.CardToken));
 
             var affected = await updateCommand.ExecuteNonQueryAsync();

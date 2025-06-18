@@ -1,7 +1,7 @@
 using FluentValidation;
 using FinFlowApi.DTOs;
 
-public class CardTokenRemoveDtoValidator : AbstractValidator<CardTokenRemoveDto>
+public class CardTokenRemoveDtoValidator : AbstractValidator<CardTokenRemoveAndUnblockDto>
 {
     public CardTokenRemoveDtoValidator()
     {

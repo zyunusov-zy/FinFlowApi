@@ -12,7 +12,7 @@ public class CardTokenService : ICardTokenService
     {
         _repo = repo;
     }
-    public async Task<int> RemoveCardToken(CardTokenRemoveDto dto)
+    public async Task<int> RemoveCardToken(CardTokenRemoveAndUnblockDto dto)
     {
         var removed = await _repo.RemoveCardTokenAsync(dto);
 
@@ -28,5 +28,11 @@ public class CardTokenService : ICardTokenService
             throw new KeyNotFoundException("Card token not found.");
         return 0;
     }
-
+    public async Task<int> UnblockCardTokenS(CardTokenRemoveAndUnblockDto dto)
+    {
+        var unblocked = await _repo.UnblockCardTokenAsync(dto);
+        if (unblocked == -1)
+            throw new KeyNotFoundException("Card token not found.");
+        return 0;
+    }
 }
