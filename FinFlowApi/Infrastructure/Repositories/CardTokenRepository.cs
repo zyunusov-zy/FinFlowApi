@@ -95,4 +95,43 @@ public class CardTokenRepository : ICardTokenRepository
 
     }
 
+    public async Task<Dictionary<string, string>> GetCardInfoAsync(CardTokenRemoveAndUnblockDto dto,string username)
+    {
+        using var connection = new OracleConnection(_connectionString);
+        await connection.OpenAsync();
+
+        var query = @"
+            SELECT 
+                c.Pan, c.Balance, c.PhoneNumber, c.ExpiryDate, c.RefNum,
+                h.FullName
+            FROM Cards c
+            JOIN CardHolder h ON c.HolderId = h.HolderId
+            WHERE c.RefNum = :Token";
+
+        using var command = new OracleCommand(query, connection);
+        command.Parameters.Add(new OracleParameter("Token", dto.CardToken));
+
+        using var reader = await command.ExecuteReaderAsync();
+
+        if (await reader.ReadAsync())
+        {
+            var result = new Dictionary<string, string>
+            {
+                ["Id"] = reader["RefNum"]?.ToString() ?? "",
+                ["Username"] = username,
+                ["Pan"] = reader["Pan"]?.ToString() ?? "",
+                ["Balance"] = reader["Balance"]?.ToString() ?? "0",
+                ["PhoneNumber"] = reader["PhoneNumber"]?.ToString() ?? "",
+                ["ExpiryDate"] = reader["ExpiryDate"]?.ToString() ?? "",
+                ["FullName"] = reader["FullName"]?.ToString() ?? "",
+                
+            };
+
+            return result;
+        }
+
+        throw new KeyNotFoundException("Car not found!!!");
+    }
+
+
 }

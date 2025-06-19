@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 using FinFlowApi.DTOs;
 using FinFlowApi.Services;
@@ -180,6 +181,40 @@ public class CardTokenController : ControllerBase
             {
                 error = ex.Message,
                 code = -3
+            });
+        }
+    }
+    [HttpPost("info")]
+    [Authorize]
+    public async Task<IActionResult> GetCardInfo([FromBody] CardTokenRemoveAndUnblockDto dto)
+    {
+        var validationResult = await _cardTokenRemoveValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(e => new
+            {
+                e.PropertyName,
+                e.ErrorMessage
+            });
+
+            return BadRequest(errors);
+        }
+
+        try
+        {
+            var username = User.FindFirst("name")?.Value ?? "Unknown";            var map = await _cardTokenService.GetCardInfo(dto, username);
+            return Ok(new
+            {
+                result = map
+            });
+
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                error = ex.Message,
+                code = -4
             });
         }
     }

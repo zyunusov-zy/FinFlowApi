@@ -10,4 +10,6 @@ public interface ICardTokenRepository
     Task<int> UnblockCardTokenAsync(CardTokenRemoveAndUnblockDto dto);
 
     Task<(string?, decimal)> CardBalanceCheckAsync(CardTokenRemoveAndUnblockDto dto);
+
+    Task<Dictionary<string, string>> GetCardInfoAsync(CardTokenRemoveAndUnblockDto dto, string username);
 }

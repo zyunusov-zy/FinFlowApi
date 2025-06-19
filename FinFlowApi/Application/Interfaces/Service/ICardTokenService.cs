@@ -8,4 +8,6 @@ public interface ICardTokenService
     Task<int> BlockCardTokenS(BlockCardTokenDto dto);
     Task<int> UnblockCardTokenS(CardTokenRemoveAndUnblockDto dto);
     Task<(string?, decimal)> CardBalanceCheck(CardTokenRemoveAndUnblockDto dto);
+
+    Task<Dictionary<string, string>> GetCardInfo(CardTokenRemoveAndUnblockDto dto, string username);
 }

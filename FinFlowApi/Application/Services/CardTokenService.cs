@@ -43,4 +43,19 @@ public class CardTokenService : ICardTokenService
             throw new KeyNotFoundException("Card token not found.");
         return (pan, balance);
     }
+
+    public async Task<Dictionary<string, string>> GetCardInfo(CardTokenRemoveAndUnblockDto dto, string username)
+    {
+        if (username == null || username == "Unknown")
+            throw new Exception("No permission with username");
+        try
+        {
+            var map = await _repo.GetCardInfoAsync(dto, username);
+            return map;
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException(ex.Message);
+        }
+    }
 }
