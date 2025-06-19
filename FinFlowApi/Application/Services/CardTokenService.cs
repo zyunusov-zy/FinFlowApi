@@ -35,4 +35,12 @@ public class CardTokenService : ICardTokenService
             throw new KeyNotFoundException("Card token not found.");
         return 0;
     }
+
+    public async Task<(string?, decimal)> CardBalanceCheck(CardTokenRemoveAndUnblockDto dto)
+    {
+        var (pan, balance) = await _repo.CardBalanceCheckAsync(dto);
+        if (pan == null && balance == -1)
+            throw new KeyNotFoundException("Card token not found.");
+        return (pan, balance);
+    }
 }

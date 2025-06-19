@@ -66,4 +66,33 @@ public class CardTokenRepository : ICardTokenRepository
         }
     }
 
+    public async Task<(string?, decimal)> CardBalanceCheckAsync(CardTokenRemoveAndUnblockDto dto)
+    {
+        using var connection = new OracleConnection(_connectionString);
+        await connection.OpenAsync();
+
+        var getQuery = @"SELECT Pan, Balance FROM Cards WHERE RefNum = :Token";
+        using (var getCommand = new OracleCommand(getQuery, connection))
+        {
+            getCommand.Parameters.Add(new OracleParameter("Token", dto.CardToken));
+            using (var reader = await getCommand.ExecuteReaderAsync())
+            {
+                if (await reader.ReadAsync())
+                {
+                    string pan = reader["Pan"]?.ToString()!;
+                    decimal balance = reader["Balance"] != DBNull.Value
+                        ? Convert.ToDecimal(reader["Balance"])
+                        : 0;
+
+                    return (pan, balance);
+                }
+                else
+                {
+                    return (null, -1);
+                }
+            }
+        }
+
+    }
+
 }

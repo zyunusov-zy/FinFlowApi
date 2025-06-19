@@ -8,4 +8,6 @@ public interface ICardTokenRepository
 
     Task<int> BlockCardTokenAsync(BlockCardTokenDto dto);
     Task<int> UnblockCardTokenAsync(CardTokenRemoveAndUnblockDto dto);
+
+    Task<(string?, decimal)> CardBalanceCheckAsync(CardTokenRemoveAndUnblockDto dto);
 }

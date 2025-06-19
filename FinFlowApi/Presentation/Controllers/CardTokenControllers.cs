@@ -106,7 +106,7 @@ public class CardTokenController : ControllerBase
     }
     [HttpPost("unblock")]
     [Authorize]
-    public async Task<IActionResult> UnblockCardToken([FromBody]  CardTokenRemoveAndUnblockDto dto)
+    public async Task<IActionResult> UnblockCardToken([FromBody] CardTokenRemoveAndUnblockDto dto)
     {
         var validationResult = await _cardTokenRemoveValidator.ValidateAsync(dto);
         if (!validationResult.IsValid)
@@ -140,6 +140,46 @@ public class CardTokenController : ControllerBase
             {
                 error = ex.Message,
                 status = 1
+            });
+        }
+    }
+
+    [HttpPost("balance")]
+    [Authorize]
+    public async Task<IActionResult> CardBalanceCheck([FromBody] CardTokenRemoveAndUnblockDto dto)
+    {
+        var validationResult = await _cardTokenRemoveValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(e => new
+            {
+                e.PropertyName,
+                e.ErrorMessage
+            });
+
+            return BadRequest(errors);
+        }
+
+        try
+        {
+            var (pan, balance) = await _cardTokenService.CardBalanceCheck(dto);
+            return Ok(new
+            {
+                result = new
+                {
+                    id = dto.CardToken,
+                    pan = pan,
+                    balance = balance
+                }
+            });
+
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                error = ex.Message,
+                code = -3
             });
         }
     }
